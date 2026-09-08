@@ -36,6 +36,8 @@ export default async function handler(req,res){
       const name=safeName(data.name);catalog.categories=catalog.categories.filter(item=>item!==name);catalog.products=catalog.products.map(product=>product.category===name?{...product,category:''}:product);delete (catalog.categoryImages||{})[name];
     }else if(data.action==='updateCategoryImage'){
       const name=safeName(data.name),image=String(data.image||'').trim().slice(0,2000);if(!catalog.categories.includes(name))return json(res,404,{error:'Categoría no encontrada.'});catalog.categoryImages={...(catalog.categoryImages||{})};if(image)catalog.categoryImages[name]=image;else delete catalog.categoryImages[name];
+    }else if(data.action==='updateCategory'){
+      const name=safeName(data.name),newName=safeName(data.newName);if(!catalog.categories.includes(name)||!newName)return json(res,400,{error:'Ingresa un nombre de categoría válido.'});if(name!==newName&&catalog.categories.some(item=>item.toLowerCase()===newName.toLowerCase()))return json(res,409,{error:'Ya existe una categoría con ese nombre.'});catalog.categories=catalog.categories.map(item=>item===name?newName:item);catalog.products=catalog.products.map(product=>product.category===name?{...product,category:newName}:product);catalog.categoryImages={...(catalog.categoryImages||{})};if(catalog.categoryImages[name]){catalog.categoryImages[newName]=catalog.categoryImages[name];delete catalog.categoryImages[name]}
     }else if(data.action==='createProduct'||data.action==='updateProduct'){
       const incoming=data.product||{},name=safeName(incoming.name);if(!name)return json(res,400,{error:'El producto necesita un nombre.'});
       const images=String(incoming.image||'').split('|').map(value=>value.trim()).filter(Boolean).slice(0,3);
