@@ -1,5 +1,6 @@
 const categoriesKey='mv:categories';
 const productsKey='mv:products';
+const categoryImagesKey='mv:category-images';
 
 const seedCategories=['Balanzas','Selladoras','Gastronómicos','Cortadoras','Empacadoras','Procesadores'];
 const seedProducts=[
@@ -26,16 +27,18 @@ async function command(...parts){
 }
 
 export async function getCatalog(){
-  const [categoriesResult,productsResult]=await Promise.all([command('get',categoriesKey),command('get',productsKey)]);
+  const [categoriesResult,productsResult,categoryImagesResult]=await Promise.all([command('get',categoriesKey),command('get',productsKey),command('get',categoryImagesKey)]);
   const categories=categoriesResult.result?JSON.parse(categoriesResult.result):seedCategories;
   const products=productsResult.result?JSON.parse(productsResult.result):seedProducts;
-  return {categories,products};
+  const categoryImages=categoryImagesResult.result?JSON.parse(categoryImagesResult.result):{};
+  return {categories,products,categoryImages};
 }
 
 export async function saveCatalog(catalog){
   await Promise.all([
     command('set',categoriesKey,JSON.stringify(catalog.categories)),
     command('set',productsKey,JSON.stringify(catalog.products)),
+    command('set',categoryImagesKey,JSON.stringify(catalog.categoryImages||{})),
   ]);
 }
 

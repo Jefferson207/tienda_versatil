@@ -33,7 +33,9 @@ export default async function handler(req,res){
       if(catalog.categories.some(item=>item.toLowerCase()===name.toLowerCase()))return json(res,409,{error:'La categoría ya existe.'});
       catalog.categories.push(name);
     }else if(data.action==='deleteCategory'){
-      const name=safeName(data.name);catalog.categories=catalog.categories.filter(item=>item!==name);catalog.products=catalog.products.map(product=>product.category===name?{...product,category:''}:product);
+      const name=safeName(data.name);catalog.categories=catalog.categories.filter(item=>item!==name);catalog.products=catalog.products.map(product=>product.category===name?{...product,category:''}:product);delete (catalog.categoryImages||{})[name];
+    }else if(data.action==='updateCategoryImage'){
+      const name=safeName(data.name),image=String(data.image||'').trim().slice(0,2000);if(!catalog.categories.includes(name))return json(res,404,{error:'Categoría no encontrada.'});catalog.categoryImages={...(catalog.categoryImages||{})};if(image)catalog.categoryImages[name]=image;else delete catalog.categoryImages[name];
     }else if(data.action==='createProduct'||data.action==='updateProduct'){
       const incoming=data.product||{},name=safeName(incoming.name);if(!name)return json(res,400,{error:'El producto necesita un nombre.'});
       const images=String(incoming.image||'').split('|').map(value=>value.trim()).filter(Boolean).slice(0,3);
